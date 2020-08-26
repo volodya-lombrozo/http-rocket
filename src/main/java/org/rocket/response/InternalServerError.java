@@ -5,4 +5,9 @@ public class InternalServerError implements HttpResponse {
     public int status() {
         return 500;
     }
+
+    @Override
+    public byte[] body() {
+        return "Internal server error".getBytes();
+    }
 }

@@ -7,4 +7,12 @@ public interface Chain {
 
     Mono<HttpRequest> handle(HttpRequest request);
 
+
+    class Empty implements Chain {
+
+        @Override
+        public Mono<HttpRequest> handle(HttpRequest request) {
+            return Mono.just(request);
+        }
+    }
 }

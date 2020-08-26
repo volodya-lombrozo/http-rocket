@@ -1,5 +1,7 @@
 package org.rocket.netty;
 
+import java.util.Random;
+
 public interface Port {
 
     int asInt();
@@ -27,8 +29,10 @@ public interface Port {
 
     class Fake implements Port {
 
+        private final int port = new Random().nextInt(10_000) + 20_000;
+
         public int asInt() {
-            return 0;
+            return port;
         }
     }
 }

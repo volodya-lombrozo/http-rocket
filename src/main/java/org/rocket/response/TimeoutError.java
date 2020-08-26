@@ -5,4 +5,9 @@ public class TimeoutError implements HttpResponse {
     public int status() {
         return 408;
     }
+
+    @Override
+    public byte[] body() {
+        return "Timeout".getBytes();
+    }
 }

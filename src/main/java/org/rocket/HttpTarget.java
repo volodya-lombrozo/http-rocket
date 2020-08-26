@@ -10,7 +10,7 @@ public interface HttpTarget {
 
     String path();
 
-    Mono<HttpResponse> handle(HttpRequest request);
+    Mono<? extends HttpResponse> handle(HttpRequest request);
 
     Duration timeout();
 }

@@ -23,7 +23,11 @@ public class NettyServer implements HttpServer {
     private Chain interceptorChain;
 
     public NettyServer() {
-        this(new Port.Default(), new Logger.Default(), new NettySpecificParams());
+        this(new Port.Default());
+    }
+
+    public NettyServer(Port port) {
+        this(port, new Logger.Default(), new NettySpecificParams());
     }
 
     public NettyServer(Port port, Logger logger, NettySpecificParams specificParams) {
@@ -31,6 +35,7 @@ public class NettyServer implements HttpServer {
         this.logger = logger;
         this.specificParams = specificParams;
         this.targets = new LinkedList<>();
+        this.interceptorChain = new Chain.Empty();
     }
 
 
@@ -43,7 +48,8 @@ public class NettyServer implements HttpServer {
                     .option(ChannelOption.SO_BACKLOG, 1024)
                     .group(bossGroup, workerGroup)
                     .channel(channelClass)
-                    .childHandler(new NettyChannel(targets, workerGroup, interceptorChain)).bind(port.asInt())
+                    .childHandler(new NettyChannel(targets, workerGroup, interceptorChain))
+                    .bind(port.asInt())
                     .sync().channel();
             logStarting();
             channel.closeFuture().sync();

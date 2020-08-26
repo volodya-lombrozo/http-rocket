@@ -1,11 +1,10 @@
-package org.rocket.interceptors;
+package org.rocket.aop;
 
 import org.rocket.request.HttpRequest;
+import reactor.core.publisher.Mono;
 
 public interface Chain {
 
-    Chain linkWithNext(Chain chain);
-
-    void handle(HttpRequest request);
+    Mono<HttpRequest> handle(HttpRequest request);
 
 }

@@ -1,2 +1,4 @@
-package org.rocket.general;public interface Body {
+package org.rocket.general;
+
+public interface Body {
 }

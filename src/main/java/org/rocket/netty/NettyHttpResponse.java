@@ -1,4 +1,4 @@
-package org.rocket.netty.response;
+package org.rocket.netty;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;

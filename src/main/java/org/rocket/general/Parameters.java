@@ -1,2 +1,4 @@
-package org.rocket.general;public class Parameters {
+package org.rocket.general;
+
+public interface Parameters {
 }

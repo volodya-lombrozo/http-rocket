@@ -1,4 +1,4 @@
-package org.rocket.netty.request;
+package org.rocket.netty;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import org.rocket.general.Body;

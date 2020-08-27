@@ -16,27 +16,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NettyServerTest {
 
-    private final NettyServer server = new NettyServer(new Port.Fake());
+    private final NettyServer server = new NettyServer(new Port.Fake(), new HttpTarget() {
+        @Override
+        public String path() {
+            return "api";
+        }
+
+        @Override
+        public Mono<? extends HttpResponse> handle(HttpRequest request) {
+            StringResponse data = new StringResponse("Wake up, Neo!");
+            return Mono.just(data).delayElement(Duration.ofSeconds(3));
+        }
+
+        @Override
+        public Duration timeout() {
+            return Duration.ofSeconds(1);
+        }
+    }
+    );
 
     @BeforeEach
     public void startServer() {
-        server.addHttpTargets(new HttpTarget() {
-            @Override
-            public String path() {
-                return "api";
-            }
-
-            @Override
-            public Mono<? extends HttpResponse> handle(HttpRequest request) {
-                StringResponse data = new StringResponse("Wake up, Neo!");
-                return Mono.just(data).delayElement(Duration.ofSeconds(3));
-            }
-
-            @Override
-            public Duration timeout() {
-                return Duration.ofSeconds(1);
-            }
-        });
         server.run();
     }
 

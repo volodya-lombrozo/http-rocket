@@ -15,16 +15,14 @@ import org.rocket.aop.Chain;
 
 import java.util.Collection;
 
-public class NettyChannel extends ChannelInitializer<SocketChannel> {
+public class NettyChannelPipeline extends ChannelInitializer<SocketChannel> {
 
 
     private final Collection<HttpTarget> targets;
-    private final EventLoopGroup loopGroup;
     private final Chain interceptorChain;
 
-    public NettyChannel(Collection<HttpTarget> targets, EventLoopGroup loopGroup, Chain interceptorChain) {
+    public NettyChannelPipeline(Collection<HttpTarget> targets, Chain interceptorChain) {
         this.targets = targets;
-        this.loopGroup = loopGroup;
         this.interceptorChain = interceptorChain;
     }
 
@@ -40,7 +38,7 @@ public class NettyChannel extends ChannelInitializer<SocketChannel> {
                         .allowedRequestHeaders("Content-Type", "api_key", "Authorization", "AUTH_TOKEN")
                         .allowedRequestMethods(HttpMethod.POST, HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS)
                         .allowNullOrigin().allowCredentials().build()));
-        targets.forEach(t -> pipeline.addLast(loopGroup, new NettyTargetHandler(t, interceptorChain)));
+        targets.forEach(t -> pipeline.addLast(new NettyTargetHandler(t, interceptorChain)));
     }
 
 }

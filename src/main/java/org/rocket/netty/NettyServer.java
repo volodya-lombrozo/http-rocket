@@ -9,79 +9,50 @@ import org.rocket.HttpServer;
 import org.rocket.HttpTarget;
 import org.rocket.aop.Chain;
 import org.rocket.logger.Logger;
+import org.rocket.netty.options.SoBacklog;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 
 public class NettyServer implements HttpServer {
 
-    private final Logger logger;
     private final Port port;
-    private final NettySpecificParams specificParams;
     private final Collection<HttpTarget> targets;
-    private Chain interceptorChain;
+    private final Chain interceptorChain;
+    private final NettySpecificConfiguration nettySpecificConfigutaion;
+
 
     public NettyServer() {
         this(new Port.Default());
     }
 
     public NettyServer(Port port) {
-        this(port, new Logger.Default(), new NettySpecificParams());
+        this(port, Collections.emptyList());
     }
 
-    public NettyServer(Port port, Logger logger, NettySpecificParams specificParams) {
+    public NettyServer(Port port, HttpTarget... targets){
+        this(port, Arrays.asList(targets), new Chain.Empty());
+    }
+
+    public NettyServer(Port port, Collection<HttpTarget> targets) {
+        this(port, targets, new Chain.Empty());
+    }
+
+    public NettyServer(Port port, Collection<HttpTarget> targets, Chain interceptorChain) {
+        this(port, targets, interceptorChain, new NettySpecificConfiguration());
+    }
+
+    public NettyServer(Port port, Collection<HttpTarget> targets, Chain interceptorChain, NettySpecificConfiguration nettySpecificConfigutaion) {
         this.port = port;
-        this.logger = logger;
-        this.specificParams = specificParams;
-        this.targets = new LinkedList<>();
-        this.interceptorChain = new Chain.Empty();
+        this.targets = targets;
+        this.interceptorChain = interceptorChain;
+        this.nettySpecificConfigutaion = nettySpecificConfigutaion;
     }
-
 
     public void run() {
-        EventLoopGroup bossGroup = specificParams.bossGroup();
-        EventLoopGroup workerGroup = specificParams.workerGroup();
-        Class<? extends ServerSocketChannel> channelClass = specificParams.channelClass();
-        try {
-            Channel channel = new ServerBootstrap()
-                    .option(ChannelOption.SO_BACKLOG, 1024)
-                    .group(bossGroup, workerGroup)
-                    .channel(channelClass)
-                    .childHandler(new NettyChannel(targets, workerGroup, interceptorChain))
-                    .bind(port.asInt())
-                    .sync().channel();
-            logStarting();
-            channel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            logErr(e);
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-        }
+        NettySpecificConfiguration nettySpecificConfiguration = new NettySpecificConfiguration(new NettyGroups(), Collections.singleton(new SoBacklog()));
+        NettyChannelPipeline pipeline = new NettyChannelPipeline(targets, interceptorChain);
+        NettyServerBootstrap nettyServerBootstrap = new NettyServerBootstrap(nettySpecificConfiguration, pipeline, new Logger.Default());
+        nettyServerBootstrap.run(port);
     }
 
-    public void addHttpTargets(Collection<HttpTarget> targets) {
-        this.targets.addAll(targets);
-    }
-
-    public void addHttpTargets(HttpTarget... targets) {
-        this.targets.addAll(Arrays.asList(targets));
-    }
-
-    public void registerInterceptorChain(Chain chain) {
-        this.interceptorChain = chain;
-    }
-
-
-    private void logStarting() {
-        logger.info("Netty server started: " + "http://127.0.0.1:" + port.asInt() + "/");
-    }
-
-    private void logErr(Throwable throwable) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        throwable.printStackTrace(printWriter);
-        logger.err(stringWriter.toString());
-    }
 }
